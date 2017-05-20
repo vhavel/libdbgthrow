@@ -69,7 +69,12 @@ extern "C" void __cxa_throw (
     // make space for one more function (this one), which we ommit afterwards
     ++depth;
 
-    void** bt_stack = (void**)malloc(depth * sizeof(void*));
+    void* bt_stack[64] = {};
+
+    if (depth > 64) {
+        depth = 64;
+    }
+
     int size = backtrace(bt_stack, depth);
     char **symbols = backtrace_symbols(bt_stack+1, std::min((size_t)size-1, depth-1));
     for (int symbol_no = 0; symbol_no < size-1; ++symbol_no) {
@@ -131,7 +136,7 @@ extern "C" void __cxa_throw (
             fprintf(g_output.out, "%s\n", symbol_str);
         }
     }
-    free(bt_stack);
+
     free(symbols);
 
     g_orig_cxa_throw.m_fptr(thrown_exception, tinfo, dest);
