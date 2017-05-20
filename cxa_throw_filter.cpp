@@ -5,9 +5,9 @@
 #include <cstdlib>
 #include <algorithm>
 #include <vector>
-#include <iostream>
 #include <cxxabi.h>
 #include <cstring>
+#include <string>
 
 namespace {
 
@@ -23,6 +23,30 @@ struct OrigCxaThrowRoutine
 };
 OrigCxaThrowRoutine g_orig_cxa_throw;
 
+struct OutputFileHolder
+{
+    OutputFileHolder()
+    {
+        out = stderr;
+        char *out_filename_env = getenv("BACKTRACE_FILENAME");
+        if (out_filename_env)
+        {
+            out = fopen(out_filename_env, "a");
+            if (!out)
+                out = stderr;
+        }
+    }
+
+    ~OutputFileHolder()
+    {
+        if (out && out != stderr)
+            fclose(out);
+    }
+
+    FILE *out;
+};
+OutputFileHolder g_output;
+
 }
 
 extern "C" void __cxa_throw (
@@ -30,15 +54,15 @@ extern "C" void __cxa_throw (
         std::type_info *tinfo,
         void (*dest)(void *))
 {
-
     int dm_status;
     char* exp_demangled = abi::__cxa_demangle(tinfo->name(), 0, 0, &dm_status);
     if (dm_status == 0) {
-        std::cerr << exp_demangled << " thrown at:\n";
+        fprintf(g_output.out, "%s thrown at:\n", exp_demangled);
         free(exp_demangled);
-    } else
-        std::cerr << tinfo->name() << " thrown at:\n";
-    
+    } else {
+        fprintf(g_output.out, "%s thrown at:\n", tinfo->name());
+    }
+
     size_t depth = 10;
     char *depth_env = getenv("BACKTRACE_DEPTH");
     if (depth_env)
@@ -88,25 +112,19 @@ extern "C" void __cxa_throw (
             function_offset.assign(symbol_str + last_plus + 1, symbol_str + last_closing_br);
             module_offset.assign(symbol_str + last_closing_br + 1);
 
-            std::cerr << "  Module " << module << module_offset << '\n';
-            std::cerr << "    ";
+            fprintf(g_output.out, "  Module %s%s\n", module.c_str(), module_offset.c_str());
 
             int status;
             char* demangled = abi::__cxa_demangle(function_mangled.c_str(), 0, 0, &status);
-            if (status == 0)
-            {
-                std::cerr << demangled;
+            if (status == 0) {
+                fprintf(g_output.out, "    %s\n", demangled);
                 free(demangled);
+            } else {
+                fprintf(g_output.out, "    %s\n", function_mangled.c_str());
             }
-            else
-            {
-                std::cerr << function_mangled;
-            }
-
-            std::cerr << std::endl;
 
         } else {
-            std::cerr << symbol_str << std::endl;
+            fprintf(g_output.out, "%s\n", symbol_str);
         }
 
 
