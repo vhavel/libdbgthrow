@@ -20,16 +20,10 @@ void pretty_print_sym(FILE* out, const char* name)
     }
 }
 
-void pretty_print_bt(FILE* out, size_t depth)
+void pretty_print_bt(FILE* out, void** bt_stack, size_t depth)
 {
-    if (depth > 64) {
-        depth = 64;
-    }
-    void* bt_stack[64] = {};
-
-    int size = backtrace(bt_stack, depth);
-    char **symbols = backtrace_symbols(bt_stack+1, std::min((size_t)size-1, depth-1));
-    for (int symbol_no = 0; symbol_no < size-1; ++symbol_no) {
+    char **symbols = backtrace_symbols(bt_stack, depth);
+    for (int symbol_no = 0; symbol_no < depth; ++symbol_no) {
         char *symbol_str = symbols[symbol_no];
         if (!symbol_str)
             break;
