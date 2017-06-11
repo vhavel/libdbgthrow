@@ -4,6 +4,8 @@
 #include <execinfo.h>
 #include <cstring>
 
+#include <dlfcn.h>
+
 #include "backtrace_print.h"
 
 namespace libdbgthrow
@@ -23,62 +25,24 @@ void pretty_print_sym(FILE* out, const char* name)
 
 void pretty_print_bt(FILE* out, void** bt_stack, size_t depth)
 {
-    char **symbols = backtrace_symbols(bt_stack, depth);
-    for (int symbol_no = 0; symbol_no < depth; ++symbol_no) {
-        char *symbol_str = symbols[symbol_no];
-        if (!symbol_str)
+    for (size_t symbol_no = 0; symbol_no < depth; ++symbol_no) {
+        void *symbol_addr = bt_stack[symbol_no];
+        if (!symbol_addr)
             break;
 
-        size_t s_len = strlen(symbol_str);
-        size_t last_closing_br = 0;
-        for (size_t i = 0; i < s_len; ++i) {
-            if (symbol_str[i] == ')')
-                last_closing_br = i;
+        Dl_info dl_info;
+        int res = dladdr(symbol_addr, &dl_info);
+        
+        fputs("  ", out);
+        if (res == 0) {
+            fprintf(out, "[%p]\n", symbol_addr);
+            continue;
         }
-        size_t last_plus = 0;
-        for (size_t i = last_closing_br; i > 0; --i) {
-            if (symbol_str[i] == '+') {
-                last_plus = i;
-                break;
-            }
-        }
-
-        size_t opening_br = 0;
-        for (size_t i = last_plus; i > 0; --i) {
-            if (symbol_str[i] == '(') {
-                opening_br = i;
-                break;
-            }
-        }
-
-        if (opening_br > 0) {
-            char* module;
-            char* function_mangled;
-            char* function_offset;
-            char* module_offset;
-
-            module = symbol_str;
-            symbol_str[opening_br] = '\0';
- 
-            function_mangled = symbol_str + opening_br + 1;
-            symbol_str[last_plus] = '\0';
-
-            function_offset = symbol_str + last_plus + 1;
-            symbol_str[last_closing_br] = '\0';
-
-            module_offset = symbol_str + last_closing_br + 2;
-
-            fputs("  ", out);
-            pretty_print_sym(out, function_mangled);
-            fprintf(out, " (%s %s)\n", module, module_offset);
-
-        } else {
-            fprintf(out, "%s\n", symbol_str);
-        }
+        if (dl_info.dli_sname)
+            pretty_print_sym(out, dl_info.dli_sname);
+        fprintf(out, " (%s) [%p]\n", dl_info.dli_fname, dl_info.dli_saddr);
     }
     fputc('\n', out);
-
-    free(symbols);
 }
 }
 

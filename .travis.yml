@@ -1,8 +1,11 @@
+sudo: true
+
 language: cpp
 
 before_install:
  - sudo apt-get -qq update
  - sudo apt-get install -y binutils-dev 
+ - sudo apt-get install -y gdb
 
 compiler:
  - gcc

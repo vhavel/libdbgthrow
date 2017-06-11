@@ -1,9 +1,9 @@
-CFLAGS=-g
+CXXFLAGS=-g -Wall
 
 libdbgthrow.so: cxa_throw_filter.cpp backtrace_print.cpp
-	$(CXX) $(CFLAGS) -c -fPIC -o cxa_throw_filter.o cxa_throw_filter.cpp
-	$(CXX) $(CFLAGS) -c -fPIC -o backtrace_print.o backtrace_print.cpp
-	$(CXX) $(CFLAGS) -shared -rdynamic -o libdbgthrow.so\
+	$(CXX) $(CXXFLAGS) -c -fPIC -o cxa_throw_filter.o cxa_throw_filter.cpp
+	$(CXX) $(CXXFLAGS) -c -fPIC -o backtrace_print.o backtrace_print.cpp
+	$(CXX) $(CXXFLAGS) -shared -rdynamic -o libdbgthrow.so\
 		cxa_throw_filter.o backtrace_print.o -ldl
 
 clean:
