@@ -4,9 +4,10 @@
 #include <execinfo.h>
 #include <cstring>
 
-#include <algorithm>
-
 #include "backtrace_print.h"
+
+namespace libdbgthrow
+{
 
 void pretty_print_sym(FILE* out, const char* name)
 {
@@ -79,5 +80,5 @@ void pretty_print_bt(FILE* out, void** bt_stack, size_t depth)
 
     free(symbols);
 }
-
+}
 

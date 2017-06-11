@@ -31,7 +31,12 @@ $ addr2line -e ./your_binary 0x400bd6
 /home/user/your_source.cpp:7 (discriminator 2)
 ```
 
-The number of lines is controlled by the  `BACKTRACE_DEPTH` environment variable, the library
-prints 10 lines of stack by default.
+Configuration
+-------------
 
+| Environment Variable        | Default  |
+| ----------------------------|----------:
+| `DBGTHROW_BACKTRACE_DEPTH`  | 10       |
+| `DBGTHROW_OUTPUT_FILENAME`  | `stderr` |
+| `DBGTHROW_EXCEPT_PATTERN`   | <all>    |
 

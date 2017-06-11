@@ -29,7 +29,7 @@ struct OutputFileHolder
     OutputFileHolder()
     {
         out = stderr;
-        char *out_filename_env = getenv("DBGTHROW_BACKTRACE_FILENAME");
+        char *out_filename_env = getenv("DBGTHROW_OUTPUT_FILENAME");
         if (out_filename_env)
         {
             out = fopen(out_filename_env, "a");
@@ -79,7 +79,7 @@ extern "C" void __cxa_throw (
     }
 
     if (g_filter.match(exp_name)) {
-        pretty_print_sym(g_output.out, tinfo->name());
+        libdbgthrow::pretty_print_sym(g_output.out, tinfo->name());
         fputs(" thrown at:\n", g_output.out);
 
         size_t depth = 10;
@@ -95,7 +95,10 @@ extern "C" void __cxa_throw (
         void* bt_stack[64] = {};
 
         int size = backtrace(bt_stack, depth);
-        pretty_print_bt(g_output.out, bt_stack+1, std::min((size_t)size-1, depth-1));
+        libdbgthrow::pretty_print_bt(
+                g_output.out,
+                bt_stack+1,
+                std::min((size_t)size-1, depth-1));
     }
 
     free(exp_name_demangled);
