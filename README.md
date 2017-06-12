@@ -16,20 +16,12 @@ $ LD_PRELOAD=./libdbgthrow.so ./your_binary
 
 ```
 std::runtime_error thrown at:
-./your_binary	f()+0x30	 [0x400bd6]
-./your_binary	main+0x9	 [0x400bf4]
-/lib/x86_64-linux-gnu/libc.so.6	__libc_start_main+0xf0	 [0x7fe883ca4830]
-./your_binary	_start+0x29	 [0x400ad9]
+  f() at /home/vojta/libdbgthrow/test/test1.cpp:6 (./test1)
+  main at /home/vojta/libdbgthrow/test/test1.cpp:15 (./test1)
+  __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6 [0x7fcd4061f740])
+  ?? (./test1 [(nil)])
 ```
 
-You may need to instruct your linker to add all symbols to the dynamic symbols table
-otherwise you won't see any useful symbol names in the output (gcc hint: `-rdynamic`).
-Alternatively, use the `add2name` utility for address-to-name translation
-
-```
-$ addr2line -e ./your_binary 0x400bd6
-/home/user/your_source.cpp:7 (discriminator 2)
-```
 
 Configuration
 -------------
