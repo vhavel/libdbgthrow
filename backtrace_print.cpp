@@ -40,7 +40,7 @@ namespace
             if (!m_bfd_file)
                 return;
 
-            if (bfd_check_format(m_bfd_file, bfd_object));
+            if (bfd_check_format(m_bfd_file, bfd_object))
                 return;
 
             flagword file_flags = bfd_get_file_flags(m_bfd_file);

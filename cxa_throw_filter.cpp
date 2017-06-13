@@ -99,6 +99,7 @@ extern "C" void __cxa_throw (
                 g_output.out,
                 bt_stack+1,
                 std::min((size_t)size-1, depth-1));
+        fflush(g_output.out);
     }
 
     free(exp_name_demangled);
